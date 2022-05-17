@@ -29,6 +29,13 @@ namespace PermaPlatformer.Engine
             while (!WindowShouldClose())
             {
                 float frameTime = GetFrameTime();
+
+                float offset = 0;
+                offset += GetFrameTime();
+                while (offset > 0)
+                {
+                    offset -= 0.1f;
+                }
                 game.Update(frameTime);
                 game.PreDraw();
             }

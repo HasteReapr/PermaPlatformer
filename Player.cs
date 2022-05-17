@@ -13,12 +13,15 @@ namespace PermaPlatformer
         private Vector2 position;
         private Vector2 oldPos;
         private Vector2 velocity;
+        private Rectangle hitbox;
+
+        public static bool Colliding;
+        public static bool Intersecting;
+        public static int IntersectingDir; //0 for top, 1 for right, 2 for bottom, 3 for left
 
         private Texture playerSprite;
         private int SpeedY;
         private int SpeedX;
-        private Rectangle hitbox;
-        private bool Colliding;
         public static int HP;
         public static int MaxHP;
 
@@ -45,6 +48,7 @@ namespace PermaPlatformer
             //Sprite.Animate(player jump sprite);
             //Sprite.Draw(playerSprite, position, WHITE);
             Sprite.Draw(playerSprite, new Rectangle(0, 0, 32 * SpeedX, 32), position, WHITE);
+            //DrawRectangle((int)position.X, (int)position.Y, (int)hitbox.width, (int)hitbox.height, RED);
         }
 
         public void PreUpdate()
@@ -55,9 +59,6 @@ namespace PermaPlatformer
 
         public void Update()
         {
-            if (!Colliding)
-                velocity.Y = 2;
-
             hitbox.X = position.X;
             hitbox.Y = position.Y;
 
@@ -71,25 +72,46 @@ namespace PermaPlatformer
             }
             if(offset <= 0) Move();
 
+            if (!Colliding)
+            {
+                if (velocity.Y < 8)
+                    velocity.Y += 0.75f;
+                else if (velocity.Y > 8)
+                    velocity.Y += 1;
+                else if (velocity.Y > 24)
+                    velocity.Y = 24;
+            }
+            else if (Colliding && velocity.Y > 0)
+                velocity.Y = 0;
+
             if(velocity != Vector2.Zero)
             {
+                //add collision X
                 velocity.X = Game.Lerp(velocity.X, 0, 0.1f);
-                velocity.Y = Game.Lerp(velocity.Y, 0, 0.1f);
+                //add collision Y
+                velocity.Y = Game.Lerp(velocity.Y, 0, velocity.Y > 8 ? 0.5f : 0.1f);
                 position += velocity;
+            }
+
+            //snap back up if inside a hitbox
+            if (Intersecting && IntersectingDir == 0)
+            {
+                position.Y -= 0.06f;
+                Colliding = true;
             }
         }
 
         public void Move()
         {
             if (IsKeyDown(KeyboardKey.KEY_A))
-                velocity.X = -4;
+                velocity.X = Game.Lerp(velocity.X, -6, 0.9f);
 
             if (IsKeyDown(KeyboardKey.KEY_D))
-                velocity.X = 4;
+                velocity.X = Game.Lerp(velocity.X, 6, 0.9f);
 
-            if (IsKeyPressed(KeyboardKey.KEY_SPACE))
+            if (IsKeyPressed(KeyboardKey.KEY_SPACE) )//&& Colliding)
             {
-                velocity.Y = -24;
+                velocity.Y = -16;
             }            
         }
 
@@ -98,9 +120,26 @@ namespace PermaPlatformer
             Colliding = input;
         }
 
-        public bool colliding(Rectangle hitbox)
+        public bool Collision(Rectangle hitbox)
         {
+            
             return CheckCollisionRecs(this.hitbox, hitbox);
+        }
+
+        public bool IntersectingTop(Rectangle hitbox, Vector2 position)
+        {
+            Rectangle newHitBox = new Rectangle((int)position.X, (int)position.Y, (int)hitbox.width, 8);
+            DrawRectangle((int)position.X, (int)position.Y, (int)hitbox.width, 8, BLUE);
+            return CheckCollisionRecs(this.hitbox, newHitBox);
+            //return CheckCollisionLines(position, position + new Vector2(hitbox.width, 8), this.position + new Vector2(this.hitbox.width, this.hitbox.height), this.position + new Vector2(0, this.hitbox.height), &output);
+            //return CheckCollisionPointRec(position + new Vector2(hitbox.width/2, 0), this.hitbox);
+        }
+
+        public bool IntersectingSide(Rectangle hitbox, Vector2 position, int side)
+        {
+            //side is positive for left side, negative for right side
+            Vector2 pointSide = side == 1 ? new Vector2(position.X, position.Y + hitbox.height / 2) : new Vector2(position.X + hitbox.width, position.Y + hitbox.height / 2);
+            return CheckCollisionPointRec(pointSide, this.hitbox);
         }
     }
 }

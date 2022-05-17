@@ -77,7 +77,30 @@ namespace PermaPlatformer.Engine
                 player.PreUpdate();
 
 
-                player.SetColliding(player.colliding(tile.getHitbox()));
+                Player.Colliding = player.Collision(tile.getHitbox());
+
+                if (player.IntersectingTop(tile.getHitbox(), tile.getPosition()))
+                {
+                    Player.IntersectingDir = 0;
+                    Player.Intersecting = true;
+                }
+                else if(player.IntersectingSide(tile.getHitbox(), tile.getPosition(), 1))
+                {
+                    Player.IntersectingDir = 3;
+                    Player.Intersecting = true;
+                }
+                else if(player.IntersectingSide(tile.getHitbox(), tile.getPosition(), -1))
+                {
+                    Player.IntersectingDir = 1;
+                    Player.Intersecting = true;
+                }
+                else
+                {
+                    Player.Intersecting = false;
+                    Player.IntersectingDir = -1;
+                }
+
+                Console.WriteLine(Player.Intersecting);
             }
         }
 
@@ -112,8 +135,8 @@ namespace PermaPlatformer.Engine
 
             if(CurrentState == (int)GameState.LEVEL)
             {
-                player.Draw();
                 tile.DrawTiled(new Vector2(0, 300), 800, 32, 25, 6, WHITE);
+                player.Draw();
             }
 
             PostDraw();
