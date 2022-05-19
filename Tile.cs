@@ -9,20 +9,19 @@ namespace PermaPlatformer
 {
     class Tile
     {
-        private Vector2 position;
-        private Rectangle hitbox;
-        private Texture tileSprite;
+        public Vector2 position;
+        public Texture tileSprite;
+        private string name;
 
         public Tile(int x, int y)
         {
             position = new Vector2(x, y);
-            hitbox = new Rectangle(x, y, 32, 32);
         }
 
-        public Tile(int x, int y, int width, int height)
+        public Tile(int x, int y, string name)
         {
             position = new Vector2(x, y);
-            hitbox = new Rectangle(x, y, width, height);
+            this.name = name;
         }
 
         public void Load()
@@ -40,14 +39,9 @@ namespace PermaPlatformer
             Sprite.DrawTiled(tileSprite, position, width, height, xscale, yscale, color);
         }
 
-        public Vector2 getPosition()
+        public override string ToString()
         {
-            return position;
-        }
-    
-        public Rectangle getHitbox()
-        {
-            return hitbox;
+            return name + " position " + position + " hitbox <" + position.X + 32 + " " + position.Y + 32 + ">";
         }
     }
 }

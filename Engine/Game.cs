@@ -15,12 +15,13 @@ namespace PermaPlatformer.Engine
         public static bool reloadNeeded = false;
 
         Player player = new Player();
-        Tile tile = new Tile(0, 300, 800, 192);
+        Tile tile = new Tile(192, 320, "Big Tile");
+        Tile smallTile = new Tile(320, 256, "Small Tile");
 
         static Texture playTexture = LoadTexture("Stone_Tile.png");
         PlayButton play = new PlayButton(350, 250, 50, 25, playTexture, "Play");
 
-        public List<Tile> tileList = new List<Tile>();
+        public static List<Tile> tileList = new List<Tile>();
 
         public enum GameState
         {
@@ -37,6 +38,18 @@ namespace PermaPlatformer.Engine
             Level5
         }
 
+        public static void CreateTile(Vector2 position)
+        {
+            Tile output = new Tile((int)position.X, (int)position.Y, "PlacedTile");
+            output.Load();
+            tileList.Add(output);
+        }
+
+        public void AddTile(Tile tile)
+        {
+            tileList.Add(tile);
+        }
+
         public void LoadGame()
         {
             //load assets here
@@ -49,6 +62,9 @@ namespace PermaPlatformer.Engine
             {
                 player.Load();
                 tile.Load();
+                smallTile.Load();
+
+                tileList.Add(smallTile);
                 tileList.Add(tile);
             }
         }
@@ -76,31 +92,26 @@ namespace PermaPlatformer.Engine
             {
                 player.PreUpdate();
 
-
-                Player.Colliding = player.Collision(tile.getHitbox());
-
-                if (player.IntersectingTop(tile.getHitbox(), tile.getPosition()))
-                {
-                    Player.IntersectingDir = 0;
-                    Player.Intersecting = true;
-                }
-                else if(player.IntersectingSide(tile.getHitbox(), tile.getPosition(), 1))
-                {
-                    Player.IntersectingDir = 3;
-                    Player.Intersecting = true;
-                }
-                else if(player.IntersectingSide(tile.getHitbox(), tile.getPosition(), -1))
-                {
-                    Player.IntersectingDir = 1;
-                    Player.Intersecting = true;
-                }
+                /*if(player.getPos().X < smallTile.getPosition().X)
+                    player.LeftCollision(smallTile.getHitbox());
                 else
-                {
-                    Player.Intersecting = false;
-                    Player.IntersectingDir = -1;
-                }
+                    player.RightCollision(smallTile.getHitbox());
 
-                Console.WriteLine(Player.Intersecting);
+                player.VerticalCollision(smallTile.getHitbox());*/
+
+                for (int x = 0; x < tileList.Count; x++)
+                {
+                    //Rectangle drawZone = new Rectangle((int)player.position.X - 16, (int)player.position.Y - 16, 32, 32);
+                    Rectangle hitZone = new Rectangle(player.position.X - 16, player.position.Y - 16, 64, 64);
+                    Rectangle hit = new Rectangle(tileList[x].position.X, tileList[x].position.Y, 32, 32);
+                    if (CheckCollisionRecs(hit, hitZone))
+                    {
+                        player.HorizontalCollision(hit);
+                        player.VerticalCollision(hit);
+                    }
+
+                    //Console.WriteLine(tileList[x]);
+                }
             }
         }
 
@@ -108,7 +119,7 @@ namespace PermaPlatformer.Engine
         {
             //this happens before draw
             BeginDrawing();
-            ClearBackground(WHITE);
+            ClearBackground(BLACK);
             //code to happen before draw
 
             if(CurrentState == (int)GameState.MAIN_MENU)
@@ -135,8 +146,21 @@ namespace PermaPlatformer.Engine
 
             if(CurrentState == (int)GameState.LEVEL)
             {
-                tile.DrawTiled(new Vector2(0, 300), 800, 32, 25, 6, WHITE);
                 player.Draw();
+                for (int x = 0; x < tileList.Count; x++)
+                {
+                    Rectangle hit = new Rectangle(tileList[x].position.X, tileList[x].position.Y, 32, 32);
+                    if (CheckCollisionRecs(hit, player.drawZone))
+                        tileList[x].Draw();
+                    else
+                        DrawRectangle((int)tileList[x].position.X, (int)tileList[x].position.Y, 32, 32, BLACK);
+                }
+                //tileList[x].Draw();
+
+                //tile.DrawTiled(new Vector2(320, 256), 32, 32, 8, 4, WHITE);
+                //tile.Draw();
+                //smallTile.Draw();
+                DrawRectangle((int)player.position.X - 6, (int)player.position.Y - 8, 40, 40, ColorAlpha(RED, 0.5f));
             }
 
             PostDraw();

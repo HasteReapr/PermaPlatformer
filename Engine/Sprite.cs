@@ -14,6 +14,11 @@ namespace PermaPlatformer.Engine
             DrawTexture(texture, (int)position.X, (int)position.Y, color);
         }
 
+        public static void DrawAlpha(Texture texture, Vector2 position, Color color, float Alpha)
+        {
+            DrawTexture(texture, (int)position.X, (int)position.Y, ColorAlpha(color, Alpha));
+        }
+
         public static void DrawTiled(Texture texture, Vector2 position, int width, int height, int xscale, int yscale, Color color)
         {
             DrawTexturePro(texture, new Rectangle(0, 0, xscale * width, yscale * height), new Rectangle(position.X, position.Y, width * xscale, height * yscale), new Vector2(0, 0), 0, color);
